@@ -16,7 +16,7 @@ while True:
 
     elif menu == 2:
         tarik = int(input("Masukkan nominal: "))
-        
+
         if tarik <= saldo_awal:
             print("Saldo tidak mencukupi!")
 

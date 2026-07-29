@@ -1,6 +1,6 @@
 while True:
 
-    saldo_awal = 0
+    saldo_awal = None
 
     print("-------- Menu --------")
     print("1. Cek Saldo")

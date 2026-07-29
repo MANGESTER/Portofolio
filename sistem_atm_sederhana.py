@@ -15,11 +15,10 @@ while True:
         print(f"Saldo anda: {saldo_awal}")
 
     elif menu == 2:
+        tarik = int(input("Masukkan nominal: "))
         
         if tarik <= saldo_awal:
             print("Saldo tidak mencukupi!")
-
-            tarik = int(input("Masukkan nominal: "))
 
         saldo = saldo_awal - tarik
         print(f"Sisa Saldo: {saldo_awal}")

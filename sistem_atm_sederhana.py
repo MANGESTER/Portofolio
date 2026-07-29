@@ -1,15 +1,28 @@
-saldo = 500000
+while True:
 
-print("====== Menu ======")
-print("1. Cek Saldo")
-print("2. Tarik Tunai")
-print("3. Setor Tunai")
-print("4. Keluar")
+    saldo = 0
 
-menu = int(input("Pilih menu: "))
+    print("====== Menu ======")
+    print("1. Cek Saldo")
+    print("2. Tarik Tunai")
+    print("3. Setor Tunai")
+    print("4. Keluar")
 
-if menu == 1:
-    print(f"Saldo anda {saldo}")
+    menu = int(input("Pilih menu: "))
 
-if menu == 2:
-    print("Masukkan nominal: ")
+    if menu == 1:
+        print(f"Saldo anda: {saldo}")
+
+    elif menu == 2:
+        tarik = int(input("Masukkan nominal: "))
+        saldo = saldo - tarik
+        print(f"Sisa Saldo: {saldo}")
+
+    elif menu == 3:
+        setor = int(input("Masukkan nominal: "))
+        saldo = saldo + setor
+        print(f"Saldo Anda: {saldo}")
+
+    else:
+        print("Program Selesai.")
+        break 

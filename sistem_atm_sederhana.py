@@ -11,5 +11,5 @@ menu = int(input("Pilih menu: "))
 if menu == 1:
     print(f"Saldo anda {saldo}")
 
-elif menu == 4:
-    break
+if menu == 2:
+    print("Masukkan nominal: ")

@@ -2,11 +2,12 @@ while True:
 
     saldo = 0
 
-    print("====== Menu ======")
+    print("-------- Menu --------")
     print("1. Cek Saldo")
     print("2. Tarik Tunai")
     print("3. Setor Tunai")
     print("4. Keluar")
+    print("-----------------------")
 
     menu = int(input("Pilih menu: "))
 

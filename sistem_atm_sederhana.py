@@ -20,13 +20,13 @@ while True:
         if tarik <= saldo_awal:
             print("Saldo tidak mencukupi!")
 
-        saldo = saldo_awal - tarik
-        print(f"Sisa Saldo: {saldo_awal}")
+        sisa = saldo_awal - tarik
+        print(f"Sisa Saldo: {sisa}")
 
     elif menu == 3:
         setor = int(input("Masukkan nominal: "))
-        saldo = saldo_awal + setor
-        print(f"Saldo Anda: {saldo_awal}")
+        tambah = saldo_awal + setor
+        print(f"Saldo Anda: {tambah}")
 
     else:
         print("Program Selesai.")

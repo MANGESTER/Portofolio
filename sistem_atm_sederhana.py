@@ -28,9 +28,13 @@ while True:
     elif menu == 3:
         setor = int(input("Masukkan nominal: "))
 
-        saldo = saldo + setor 
-        print("Setor Tunai Berhasil!")
-        print(f"Saldo anda: {saldo}")
+        if setor < 0:
+            print("Maaf, nominal yang anda masukkan tidak valid!")
+
+        else:
+            saldo = saldo + setor 
+            print("Setor Tunai Berhasil!")
+            print(f"Saldo anda: {saldo}")
 
     elif menu == 4:
         print("Program Selesai.")

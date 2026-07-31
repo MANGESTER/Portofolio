@@ -21,9 +21,16 @@ while True:
             saldo = saldo - tarik 
             print(f"Penarikan berhasil!")
             print(f"Sisa Saldo anda: {saldo}")
-
+    
         else:
             print("Saldo anda tidak cukup!")
+
+    elif menu == 3:
+        setor = int(input("Masukkan nominal: "))
+
+        saldo = saldo + setor 
+        print("Setor Tunai Berhasil!")
+        print(f"Saldo anda: {saldo}")
 
     elif menu == 4:
         print("Program Selesai.")

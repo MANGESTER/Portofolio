@@ -28,7 +28,7 @@ while True:
     elif menu == 3:
         setor = int(input("Masukkan nominal: "))
 
-        if setor < 0:
+        if setor <= 0:
             print("Maaf, nominal yang anda masukkan tidak valid!")
 
         else:
@@ -39,3 +39,6 @@ while True:
     elif menu == 4:
         print("Program Selesai.")
         break
+
+    else:
+        print("No Menu TIdak Valid.")

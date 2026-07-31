@@ -1,33 +1,30 @@
+saldo = 500000
+
 while True:
 
-    saldo_awal = None
-
-    print("-------- Menu --------\n")
+    print("-------- Menu ---------")
     print("1. Cek Saldo")
     print("2. Tarik Tunai")
     print("3. Setor Tunai")
     print("4. Keluar")
     print("-----------------------")
 
-    menu = int(input("Pilih menu: "))
+    menu = int(input("Pilih Menu: "))
 
     if menu == 1:
-        print(f"Saldo anda: {saldo_awal}")
+        print(f"Saldo Anda: {saldo}")
 
     elif menu == 2:
         tarik = int(input("Masukkan nominal: "))
 
-        if tarik <= saldo_awal:
-            print("Saldo tidak mencukupi!")
+        if tarik <= 50000:
+            sisa_tarik = saldo - tarik 
+            print(f"Penarikan berhasil!")
+            print(f"Sisa Saldo anda: {sisa_tarik}")
 
-        sisa = saldo_awal - tarik
-        print(f"Sisa Saldo: {sisa}")
-
-    elif menu == 3:
-        setor = int(input("Masukkan nominal: "))
-        tambah = saldo_awal + setor
-        print(f"Saldo Anda: {tambah}")
+        else:
+            print("Saldo anda tidak cukup!")
 
     elif menu == 4:
         print("Program Selesai.")
-        break 
+        break

@@ -22,13 +22,11 @@ while True:
 
             if saldo <= 50000:
                 print("Tarik tunai gagal!, minimal sisa saldo Rp50.000")
-            else:
+
+        else:
                 print(f"Penarikan berhasil!")
                 print(f"Sisa Saldo anda: {saldo}")
     
-        else:
-            print("Saldo anda tidak cukup!")
-
     elif menu == 3:
         setor = int(input("Masukkan nominal: "))
 

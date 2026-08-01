@@ -17,7 +17,7 @@ while True:
     elif menu == 2:
         tarik = int(input("Masukkan nominal: "))
 
-        if tarik <= saldo and saldo >= 50000:
+        if tarik <= saldo and saldo <= 50000:
             saldo = saldo - tarik 
             print(f"Penarikan berhasil!")
             print(f"Sisa Saldo anda: {saldo}")

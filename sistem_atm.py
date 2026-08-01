@@ -11,7 +11,7 @@ def tarik_tunai():
         print("Saldo tidak mencukupi!")
         print(f"Saldo anda: Rp{saldo:,}")
 
-    elif saldo - tarik <= 50000:
+    elif saldo - tarik < 50000:
         print("Tarik tunai gagal, minimal sisa saldo Rp50.000")
 
     else:

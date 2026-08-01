@@ -19,8 +19,12 @@ while True:
 
         if tarik <= saldo:
             saldo = saldo - tarik 
-            print(f"Penarikan berhasil!")
-            print(f"Sisa Saldo anda: {saldo}")
+
+            if saldo <= 50000:
+                print("Tarik tunai gagal!, minimal sisa saldo Rp50.000")
+            else:
+                print(f"Penarikan berhasil!")
+                print(f"Sisa Saldo anda: {saldo}")
     
         else:
             print("Saldo anda tidak cukup!")

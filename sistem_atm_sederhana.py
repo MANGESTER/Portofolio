@@ -12,19 +12,21 @@ while True:
     menu = int(input("Pilih Menu: "))
 
     if menu == 1:
-        print(f"Saldo Anda: {saldo}")
+        print(f"Saldo Anda:Rp{saldo:,}")
 
     elif menu == 2:
         tarik = int(input("Masukkan nominal: "))
 
-        if tarik <= saldo and saldo <= 50000:
-            saldo = saldo - tarik 
-            print(f"Penarikan berhasil!")
-            print(f"Sisa Saldo anda: {saldo}")
-    
+        if tarik > saldo:
+            print("Saldo tidak cukup!")
+
+        elif saldo - tarik <= 50000:
+            print("Penarikan gagal, saldo setelah penarikan minimal Rp50.000")
+
         else:
-            print("Saldo anda tidak cukup!, minimal saldo Rp50.000")
-            print(f"Saldo anda: {saldo}")
+            saldo -= tarik
+            print("Penarikan berhasil!")
+            print(f"Sisa saldo anda:Rp{saldo:,}")
 
     elif menu == 3:
         setor = int(input("Masukkan nominal: "))
@@ -35,7 +37,7 @@ while True:
         else:
             saldo = saldo + setor 
             print("Setor Tunai Berhasil!")
-            print(f"Saldo anda: {saldo}")
+            print(f"Saldo anda:Rp{saldo:,}")
 
     elif menu == 4:
         print("Program Selesai.")

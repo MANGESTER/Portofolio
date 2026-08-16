@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buku Agenda — Planner Mahasiswa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#1C2B3A;
+    --ink-soft:#2C3E50;
+    --paper:#EFE7D8;
+    --paper-light:#F8F4EA;
+    --amber:#E3A23D;
+    --teal:#2F6E6E;
+    --coral:#C1502E;
+    --line:#D8CDB4;
+    --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(227,162,61,0.07), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(47,110,110,0.10), transparent 45%);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:36px 20px;
+  }
+  .app{
+    width:100%;
+    max-width:1080px;
+    display:flex;
+    min-height:640px;
+    box-shadow:0 30px 70px rgba(0,0,0,0.45);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  /* ===== Binder spine ===== */
+  .spine{
+    background:linear-gradient(180deg,#16212C,#1C2B3A);
+    width:76px;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:26px 0;
+    position:relative;
+    border-right:2px solid #0F1720;
+  }
+  .spine::after{
+    content:"";
+    position:absolute;
+    right:-3px; top:0; bottom:0; width:6px;
+    background:repeating-linear-gradient(180deg, transparent 0 10px, rgba(0,0,0,0.35) 10px 12px);
+  }
+  .spine-title{
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:20px;
+    color:var(--paper-light);
+    letter-spacing:2px;
+    margin-bottom:34px;
+  }
+  .tab-btn{
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    background:transparent;
+    border:none;
+    color:#9FB0C0;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    letter-spacing:1.5px;
+    padding:16px 9px;
+    margin-bottom:10px;
+    cursor:pointer;
+    border-radius:4px 0 0 4px;
+    transition:all .18s ease;
+  }
+  .tab-btn:hover{ color:var(--paper-light); }
+  .tab-btn.active{
+    background:var(--paper);
+    color:var(--ink);
+    font-weight:600;
+  }
+  .spine-foot{
+    margin-top:auto;
+    color:#5C6E80;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    writing-mode:vertical-rl;
+    transform:rotate(180deg);
+    letter-spacing:1px;
+  }
+  /* ===== Page ===== */
+  .page{
+    flex:1;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 33px, var(--line) 33px 34px),
+      var(--paper);
+    padding:34px 42px 42px 56px;
+    position:relative;
+    min-height:640px;
+  }
+  .page::before{
+    content:"";
+    position:absolute;
+    left:26px; top:0; bottom:0; width:1px;
+    background:rgba(193,80,46,0.35);
+  }
+  .punch{
+    position:absolute;
+    left:-42px;
+    top:60px;
+    display:flex;
+    flex-direction:column;
+    gap:130px;
+  }
+  .punch span{
+    width:16px;height:16px;border-radius:50%;
+    background:var(--ink);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.6);
+  }
+  header.head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  header.head h1{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:30px;
+    margin:0;
+    color:var(--ink);
+  }
+  header.head .sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--teal);
+    letter-spacing:.5px;
+  }
+  .export-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    padding:9px 14px;
+    border-radius:5px;
+    border:1.5px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .btn:hover{ background:var(--ink); color:var(--paper-light); }
+  .btn.primary{ background:var(--amber); border-color:var(--amber); color:var(--ink); }
+  .btn.primary:hover{ background:#cf8f2f; border-color:#cf8f2f; }
+  .btn.ghost{ border-color:var(--line); color:var(--teal); }
+  .btn.ghost:hover{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .btn.small{ padding:5px 9px; font-size:11px; }
+
+  .card{
+    background:var(--paper-light);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px 18px;
+    margin-bottom:22px;
+  }
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:10px;
+    align-items:end;
+  }
+  label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.5px;
+    color:var(--teal);
+    margin-bottom:5px;
+    text-transform:uppercase;
+  }
+  input, select, textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    padding:8px 9px;
+    border-radius:4px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:2px solid var(--amber);
+    outline-offset:1px;
+    border-color:var(--amber);
+  }
+  .add-btn-wrap{ display:flex; }
+  .add-btn-wrap .btn{ width:100%; }
+
+  .filter-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .filter-row button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    padding:6px 12px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:transparent;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .filter-row button.active{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:#fff;
+  }
+
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:12px 4px;
+    border-bottom:1px dashed var(--line);
+  }
+  .item:last-child{ border-bottom:none; }
+  .item.done .item-title{ text-decoration:line-through; color:#8B8477; }
+  .checkbox{
+    width:19px;height:19px;
+    border-radius:4px;
+    border:2px solid var(--teal);
+    flex-shrink:0;
+    margin-top:2px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;
+  }
+  .checkbox.checked{ background:var(--teal); }
+  .checkbox.checked::after{ content:"✓"; color:#fff; font-size:12px; font-weight:700; }
+  .item-body{ flex:1; min-width:0; }
+  .item-title{ font-size:14.5px; font-weight:600; color:var(--ink); }
+  .item-meta{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:5px;
+  }
+  .badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    padding:2px 8px;
+    border-radius:20px;
+    background:#fff;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+  }
+  .dot{ width:8px;height:8px;border-radius:50%; display:inline-block; margin-right:5px; }
+  .dot.tinggi{ background:var(--coral); }
+  .dot.sedang{ background:var(--amber); }
+  .dot.rendah{ background:var(--teal); }
+  .del-btn{
+    background:none; border:none; color:#B79E7A; cursor:pointer; font-size:16px;
+    padding:2px 6px; border-radius:4px; flex-shrink:0;
+  }
+  .del-btn:hover{ color:var(--coral); background:rgba(193,80,46,0.08); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{
+    text-align:left;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:var(--teal);
+    padding:8px 8px;
+    border-bottom:2px solid var(--ink);
+  }
+  td{ padding:9px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr.day-head td{
+    background:var(--ink);
+    color:var(--paper-light);
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:14px;
+    padding:6px 10px;
+  }
+  .empty{
+    text-align:center;
+    padding:40px 10px;
+    color:#9C927B;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+  }
+  .hint{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:#9C927B;
+    margin-top:-10px;
+    margin-bottom:16px;
+  }
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper-light);
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+    padding:11px 20px; border-radius:6px; box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none; transition:all .25s ease;
+    z-index:50;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  @media (max-width:720px){
+    .app{ flex-direction:column; }
+    .spine{ flex-direction:row; width:100%; padding:10px 14px; overflow-x:auto; }
+    .spine-title{ display:none; }
+    .tab-btn, .spine-foot{ writing-mode:horizontal-tb; transform:none; margin:0 6px 0 0; }
+    .page{ padding:24px 18px; }
+    .page::before, .punch{ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <nav class="spine">
+    <div class="spine-title">AGENDA</div>
+    <button class="tab-btn active" data-tab="todo">To-Do</button>
+    <button class="tab-btn" data-tab="jadwal">Jadwal</button>
+    <button class="tab-btn" data-tab="acara">Acara</button>
+    <div class="spine-foot">v1.0</div>
+  </nav>
+
+  <div class="page">
+    <div class="punch"><span></span><span></span><span></span></div>
+
+    <!-- ============ TAB: TO-DO ============ -->
+    <section id="tab-todo">
+      <header class="head">
+        <div>
+          <h1>Daftar Tugas</h1>
+          <div class="sub">CATAT · CENTANG · SELESAIKAN</div>
+        </div>
+        <div class="export-row">
+          <button class="btn ghost" id="todo-csv">↓ Unduh CSV</button>
+          <button class="btn primary" id="todo-xlsx">↓ Unduh Excel</button>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="form-grid">
+          <div style="grid-column:span 2;">
+            <label>Nama Tugas</label>
+            <input type="text" id="todo-title" placeholder="mis. Kerjakan laporan praktikum">
+          </div>
+          <div>
+            <label>Kategori</label>
+            <select id="todo-kategori">
+              <option>Kuliah</option>
+              <option>Organisasi</option>
+              <option>Pribadi</option>
+              <option>Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label>Tenggat</label>
+            <input type="date" id="todo-tanggal">
+          </div>
+          <div>
+            <label>Prioritas</label>
+            <select id="todo-prioritas">
+              <option>Sedang</option>
+              <option>Tinggi</option>
+              <option>Rendah</option>
+            </select>
+          </div>
+          <div class="add-btn-wrap">
+            <button class="btn primary" id="todo-add">+ Tambah Tugas</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <button class="active" data-filter="semua">Semua</button>
+        <button data-filter="belum">Belum Selesai</button>
+        <button data-filter="selesai">Selesai</button>
+      </div>
+
+      <div id="todo-list"></div>
+    </section>
+
+    <!-- ============ TAB: JADWAL ============ -->
+    <section id="tab-jadwal" style="display:none;">
+      <header class="head">
+        <div>
+          <h1>Jadwal Kuliah</h1>
+          <div class="sub">SENIN — MINGGU</div>
+        </div>
+        <div class="export-row">
+          <button class="btn ghost" id="jadwal-csv">↓ Unduh CSV</button>
+          <button class="btn primary" id="jadwal-xlsx">↓ Unduh Excel</button>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="form-grid">
+          <div>
+            <label>Hari</label>
+            <select id="jadwal-hari">
+              <option>Senin</option><option>Selasa</option><option>Rabu</option>
+              <option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Minggu</option>
+            </select>
+          </div>
+          <div>
+            <label>Jam Mulai</label>
+            <input type="time" id="jadwal-mulai">
+          </div>
+          <div>
+            <label>Jam Selesai</label>
+            <input type="time" id="jadwal-selesai">
+          </div>
+          <div style="grid-column:span 2;">
+            <label>Mata Kuliah</label>
+            <input type="text" id="jadwal-matkul" placeholder="mis. Struktur Data">
+          </div>
+          <div>
+            <label>Dosen</label>
+            <input type="text" id="jadwal-dosen" placeholder="opsional">
+          </div>
+          <div>
+            <label>Ruangan</label>
+            <input type="text" id="jadwal-ruang" placeholder="opsional">
+          </div>
+          <div class="add-btn-wrap">
+            <button class="btn primary" id="jadwal-add">+ Tambah Jadwal</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="jadwal-table-wrap"></div>
+    </section>
+
+    <!-- ============ TAB: ACARA ============ -->
+    <section id="tab-acara" style="display:none;">
+      <header class="head">
+        <div>
+          <h1>Agenda Acara</h1>
+          <div class="sub">RAPAT · SEMINAR · DEADLINE PENTING</div>
+        </div>
+        <div class="export-row">
+          <button class="btn ghost" id="acara-csv">↓ Unduh CSV</button>
+          <button class="btn primary" id="acara-xlsx">↓ Unduh Excel</button>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="form-grid">
+          <div style="grid-column:span 2;">
+            <label>Nama Acara</label>
+            <input type="text" id="acara-nama" placeholder="mis. Seminar Proposal Skripsi">
+          </div>
+          <div>
+            <label>Tanggal</label>
+            <input type="date" id="acara-tanggal">
+          </div>
+          <div>
+            <label>Waktu</label>
+            <input type="time" id="acara-waktu">
+          </div>
+          <div>
+            <label>Lokasi</label>
+            <input type="text" id="acara-lokasi" placeholder="opsional">
+          </div>
+          <div class="add-btn-wrap">
+            <button class="btn primary" id="acara-add">+ Tambah Acara</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="acara-list"></div>
+    </section>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const DAY_ORDER = ["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"];
+  let state = { todo: [], jadwal: [], acara: [] };
+  let todoFilter = "semua";
+
+  // ---------- storage helpers ----------
+  async function loadAll(){
+    for(const key of ["todo","jadwal","acara"]){
+      try{
+        const r = await window.storage.get(key, false);
+        state[key] = r && r.value ? JSON.parse(r.value) : [];
+      }catch(e){
+        state[key] = [];
+      }
+    }
+    renderTodo(); renderJadwal(); renderAcara();
+  }
+  async function save(key){
+    try{
+      await window.storage.set(key, JSON.stringify(state[key]), false);
+    }catch(e){
+      console.error("Gagal menyimpan", key, e);
+      showToast("Gagal menyimpan data. Coba lagi.");
+    }
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function fmtDate(iso){
+    if(!iso) return "—";
+    const d = new Date(iso+"T00:00:00");
+    return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      ['todo','jadwal','acara'].forEach(t=>{
+        document.getElementById('tab-'+t).style.display = (t===btn.dataset.tab) ? 'block':'none';
+      });
+    });
+  });
+
+  // ===================== TO-DO =====================
+  function renderTodo(){
+    const wrap = document.getElementById('todo-list');
+    let items = state.todo.slice().sort((a,b)=>{
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      return (a.tanggal||"9999").localeCompare(b.tanggal||"9999");
+    });
+    if(todoFilter === "belum") items = items.filter(i=>!i.done);
+    if(todoFilter === "selesai") items = items.filter(i=>i.done);
+
+    if(items.length===0){
+      wrap.innerHTML = '<div class="empty">Belum ada tugas di kategori ini. Tambahkan tugas pertamamu di atas.</div>';
+      return;
+    }
+    wrap.innerHTML = items.map(i=>`
+      <div class="item ${i.done?'done':''}">
+        <div class="checkbox ${i.done?'checked':''}" data-id="${i.id}" data-action="toggle"></div>
+        <div class="item-body">
+          <div class="item-title">${escapeHtml(i.judul)}</div>
+          <div class="item-meta">
+            <span class="badge">${escapeHtml(i.kategori)}</span>
+            <span class="badge"><span class="dot ${i.prioritas.toLowerCase()}"></span>${i.prioritas}</span>
+            <span class="badge">📅 ${fmtDate(i.tanggal)}</span>
+          </div>
+        </div>
+        <button class="del-btn" data-id="${i.id}" data-action="delete-todo" title="Hapus">✕</button>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('todo-add').addEventListener('click', ()=>{
+    const judul = document.getElementById('todo-title').value.trim();
+    if(!judul){ showToast("Isi nama tugas dulu ya"); return; }
+    state.todo.push({
+      id: uid(),
+      judul,
+      kategori: document.getElementById('todo-kategori').value,
+      tanggal: document.getElementById('todo-tanggal').value,
+      prioritas: document.getElementById('todo-prioritas').value,
+      done: false
+    });
+    document.getElementById('todo-title').value = '';
+    document.getElementById('todo-tanggal').value = '';
+    save('todo'); renderTodo();
+  });
+
+  document.getElementById('todo-list').addEventListener('click', (e)=>{
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const id = el.dataset.id;
+    if(el.dataset.action === 'toggle'){
+      const item = state.todo.find(t=>t.id===id);
+      if(item){ item.done = !item.done; save('todo'); renderTodo(); }
+    }
+    if(el.dataset.action === 'delete-todo'){
+      state.todo = state.todo.filter(t=>t.id!==id);
+      save('todo'); renderTodo();
+    }
+  });
+
+  document.querySelectorAll('.filter-row button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.filter-row button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      todoFilter = b.dataset.filter;
+      renderTodo();
+    });
+  });
+
+  // ===================== JADWAL =====================
+  function renderJadwal(){
+    const wrap = document.getElementById('jadwal-table-wrap');
+    if(state.jadwal.length===0){
+      wrap.innerHTML = '<div class="empty">Jadwal kuliah masih kosong. Tambahkan mata kuliah pertamamu di atas.</div>';
+      return;
+    }
+    const sorted = state.jadwal.slice().sort((a,b)=>{
+      const da = DAY_ORDER.indexOf(a.hari), db = DAY_ORDER.indexOf(b.hari);
+      if(da!==db) return da-db;
+      return (a.mulai||"").localeCompare(b.mulai||"");
+    });
+    let rows = '';
+    let lastDay = null;
+    sorted.forEach(j=>{
+      if(j.hari !== lastDay){
+        rows += `<tr class="day-head"><td colspan="5">${j.hari}</td></tr>`;
+        lastDay = j.hari;
+      }
+      rows += `<tr>
+        <td>${j.mulai||'—'} – ${j.selesai||'—'}</td>
+        <td>${escapeHtml(j.matkul)}</td>
+        <td>${escapeHtml(j.dosen||'—')}</td>
+        <td>${escapeHtml(j.ruang||'—')}</td>
+        <td><button class="del-btn" data-id="${j.id}" data-action="delete-jadwal">✕</button></td>
+      </tr>`;
+    });
+    wrap.innerHTML = `<table>
+      <thead><tr><th>Jam</th><th>Mata Kuliah</th><th>Dosen</th><th>Ruangan</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  document.getElementById('jadwal-add').addEventListener('click', ()=>{
+    const matkul = document.getElementById('jadwal-matkul').value.trim();
+    if(!matkul){ showToast("Isi nama mata kuliah dulu ya"); return; }
+    state.jadwal.push({
+      id: uid(),
+      hari: document.getElementById('jadwal-hari').value,
+      mulai: document.getElementById('jadwal-mulai').value,
+      selesai: document.getElementById('jadwal-selesai').value,
+      matkul,
+      dosen: document.getElementById('jadwal-dosen').value.trim(),
+      ruang: document.getElementById('jadwal-ruang').value.trim()
+    });
+    document.getElementById('jadwal-matkul').value = '';
+    document.getElementById('jadwal-dosen').value = '';
+    document.getElementById('jadwal-ruang').value = '';
+    save('jadwal'); renderJadwal();
+  });
+
+  document.getElementById('jadwal-table-wrap').addEventListener('click', (e)=>{
+    const el = e.target.closest('[data-action="delete-jadwal"]');
+    if(!el) return;
+    state.jadwal = state.jadwal.filter(j=>j.id!==el.dataset.id);
+    save('jadwal'); renderJadwal();
+  });
+
+  // ===================== ACARA =====================
+  function renderAcara(){
+    const wrap = document.getElementById('acara-list');
+    if(state.acara.length===0){
+      wrap.innerHTML = '<div class="empty">Belum ada acara. Tambahkan agenda pertamamu di atas.</div>';
+      return;
+    }
+    const sorted = state.acara.slice().sort((a,b)=>{
+      return (a.tanggal||"9999").localeCompare(b.tanggal||"9999") || (a.waktu||"").localeCompare(b.waktu||"");
+    });
+    wrap.innerHTML = sorted.map(a=>`
+      <div class="item">
+        <div class="item-body">
+          <div class="item-title">${escapeHtml(a.nama)}</div>
+          <div class="item-meta">
+            <span class="badge">📅 ${fmtDate(a.tanggal)}</span>
+            <span class="badge">🕒 ${a.waktu||'—'}</span>
+            <span class="badge">📍 ${escapeHtml(a.lokasi||'—')}</span>
+          </div>
+        </div>
+        <button class="del-btn" data-id="${a.id}" data-action="delete-acara">✕</button>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('acara-add').addEventListener('click', ()=>{
+    const nama = document.getElementById('acara-nama').value.trim();
+    if(!nama){ showToast("Isi nama acara dulu ya"); return; }
+    state.acara.push({
+      id: uid(),
+      nama,
+      tanggal: document.getElementById('acara-tanggal').value,
+      waktu: document.getElementById('acara-waktu').value,
+      lokasi: document.getElementById('acara-lokasi').value.trim()
+    });
+    document.getElementById('acara-nama').value = '';
+    document.getElementById('acara-lokasi').value = '';
+    save('acara'); renderAcara();
+  });
+
+  document.getElementById('acara-list').addEventListener('click', (e)=>{
+    const el = e.target.closest('[data-action="delete-acara"]');
+    if(!el) return;
+    state.acara = state.acara.filter(a=>a.id!==el.dataset.id);
+    save('acara'); renderAcara();
+  });
+
+  // ===================== EXPORT =====================
+  function escapeHtml(str){
+    if(str===undefined || str===null) return '';
+    return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function toCsvValue(v){
+    const s = (v===undefined||v===null) ? '' : String(v);
+    if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+    return s;
+  }
+  function downloadCsv(filename, headers, rows){
+    const lines = [headers.map(toCsvValue).join(',')];
+    rows.forEach(r=> lines.push(r.map(toCsvValue).join(',')));
+    const blob = new Blob(["\uFEFF"+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+    triggerDownload(blob, filename);
+  }
+  function downloadXlsx(filename, sheetName, headers, rows){
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, filename);
+  }
+  function triggerDownload(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function todoRows(){
+    return state.todo.map(i=>[i.judul, i.kategori, i.prioritas, i.tanggal||'', i.done?'Selesai':'Belum Selesai']);
+  }
+  function jadwalRows(){
+    const sorted = state.jadwal.slice().sort((a,b)=>{
+      const da=DAY_ORDER.indexOf(a.hari), db=DAY_ORDER.indexOf(b.hari);
+      return da!==db ? da-db : (a.mulai||'').localeCompare(b.mulai||'');
+    });
+    return sorted.map(j=>[j.hari, j.mulai, j.selesai, j.matkul, j.dosen||'', j.ruang||'']);
+  }
+  function acaraRows(){
+    const sorted = state.acara.slice().sort((a,b)=> (a.tanggal||'').localeCompare(b.tanggal||''));
+    return sorted.map(a=>[a.nama, a.tanggal||'', a.waktu||'', a.lokasi||'']);
+  }
+
+  document.getElementById('todo-csv').addEventListener('click', ()=>{
+    downloadCsv('daftar-tugas.csv', ['Tugas','Kategori','Prioritas','Tenggat','Status'], todoRows());
+  });
+  document.getElementById('todo-xlsx').addEventListener('click', ()=>{
+    downloadXlsx('daftar-tugas.xlsx', 'To-Do', ['Tugas','Kategori','Prioritas','Tenggat','Status'], todoRows());
+  });
+  document.getElementById('jadwal-csv').addEventListener('click', ()=>{
+    downloadCsv('jadwal-kuliah.csv', ['Hari','Jam Mulai','Jam Selesai','Mata Kuliah','Dosen','Ruangan'], jadwalRows());
+  });
+  document.getElementById('jadwal-xlsx').addEventListener('click', ()=>{
+    downloadXlsx('jadwal-kuliah.xlsx', 'Jadwal', ['Hari','Jam Mulai','Jam Selesai','Mata Kuliah','Dosen','Ruangan'], jadwalRows());
+  });
+  document.getElementById('acara-csv').addEventListener('click', ()=>{
+    downloadCsv('agenda-acara.csv', ['Acara','Tanggal','Waktu','Lokasi'], acaraRows());
+  });
+  document.getElementById('acara-xlsx').addEventListener('click', ()=>{
+    downloadXlsx('agenda-acara.xlsx', 'Acara', ['Acara','Tanggal','Waktu','Lokasi'], acaraRows());
+  });
+
+  loadAll();
+})();
+</script>
+</body>
+</html>
